@@ -1,0 +1,13 @@
+[package]
+name = "autofolder"
+description = "Single-element folding wrapper"
+version = "0.1.0"
+authors = ["Leandro Lisboa Penz <lpenz@lpenz.org>"]
+edition = "2018"
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/lpenz/autofolder"
+repository = "https://github.com/lpenz/autofolder"
+
+[dev-dependencies]
+anyhow = "1.0.42"
