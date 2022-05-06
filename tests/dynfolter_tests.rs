@@ -6,8 +6,7 @@ use autofolder::*;
 
 use anyhow::Result;
 
-/* Test builtin type */
-
+/// Test builtin type
 #[test]
 fn test_builtin_sum_usize() -> Result<()> {
     let mut sum = DynFolder::<usize, u16, _>::new(0_usize, |a: usize, i: u16| a + i as usize);
@@ -18,41 +17,33 @@ fn test_builtin_sum_usize() -> Result<()> {
     Ok(())
 }
 
-/* Test newtype wrapper */
-#[derive(Default, PartialEq, Eq, Debug)]
-struct Usize1(usize);
-
+/// Test newtype wrapper
 #[test]
 fn test_newtype_with_default() -> Result<()> {
-    let f = |a: Usize1, i| Usize1(a.0 + i);
-    let mut sum = DynFolder::<Usize1, usize, _>::new(Usize1::default(), f);
+    #[derive(Default, PartialEq, Eq, Debug)]
+    struct Usize(usize);
+    let f = |a: Usize, i| Usize(a.0 + i);
+    let mut sum = DynFolder::<Usize, usize, _>::new(Usize::default(), f);
     sum.extend(1..=5);
-    assert_eq!(sum.as_ref(), &Usize1(15));
+    assert_eq!(sum.as_ref(), &Usize(15));
     sum.extend((6..=10).rev());
-    assert_eq!(sum.into_inner(), Usize1(55));
+    assert_eq!(sum.into_inner(), Usize(55));
     Ok(())
 }
 
-/* Test newtype wrapper without default */
-#[derive(Debug)]
-struct Usize2(pub usize);
-
+/// Test newtype wrapper without default
 #[test]
 fn test_newtype_without_default() -> Result<()> {
-    let f = |a: Usize2, i| Usize2(a.0 + i);
-    let mut sum = DynFolder::<Usize2, usize, _>::new(Usize2(0), f);
+    #[derive(Debug)]
+    struct Usize(pub usize);
+    let f = |a: Usize, i| Usize(a.0 + i);
+    let mut sum = DynFolder::<Usize, usize, _>::new(Usize(0), f);
     sum.extend((1..=5).rev());
     assert_eq!(sum.into_inner().0, 15);
     Ok(())
 }
 
-/* Test vector of Strings, neither impl Copy */
-
-fn folder(mut inner: Vec<String>, item: String) -> Vec<String> {
-    inner.push(item);
-    inner
-}
-
+/// Test vector of Strings, neither impl Copy
 #[test]
 fn test_newtype_vec() -> Result<()> {
     let mut autofolder = DynFolder::<Vec<String>, String, _>::new(vec![], folder);
@@ -61,4 +52,9 @@ fn test_newtype_vec() -> Result<()> {
     assert_eq!(autofolder.as_ref().clone(), vec!["9", "8", "7", "6"]);
     assert_eq!(autofolder.into_inner(), vec!["9", "8", "7", "6"]);
     Ok(())
+}
+
+fn folder(mut inner: Vec<String>, item: String) -> Vec<String> {
+    inner.push(item);
+    inner
 }

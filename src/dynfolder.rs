@@ -35,7 +35,7 @@ use std::mem;
 pub struct DynFolder<Output, Item, Func> {
     output: Output,
     function: Func,
-    marker: marker::PhantomData<Item>,
+    item: marker::PhantomData<Item>,
 }
 
 impl<Output, Item, Func> DynFolder<Output, Item, Func> {
@@ -47,7 +47,7 @@ impl<Output, Item, Func> DynFolder<Output, Item, Func> {
         Self {
             output: initial,
             function: func,
-            marker: marker::PhantomData,
+            item: marker::PhantomData,
         }
     }
     /// Returns the contained value, consuming the self value.
