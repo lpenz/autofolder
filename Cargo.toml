@@ -8,6 +8,8 @@ license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lpenz/autofolder"
 repository = "https://github.com/lpenz/autofolder"
+categories = ["rust-patterns"]
+keywords = ["fold", "reduce", "container", "ad-hoc"]
 
 [dev-dependencies]
 anyhow = "1.0.42"
