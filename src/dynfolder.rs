@@ -31,7 +31,7 @@ use std::mem;
 /// let total = sum.into_inner();
 /// println!("Total sum is {}", total);
 /// ```
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct DynFolder<Output, Item, Func> {
     output: Output,
     function: Func,
@@ -74,6 +74,22 @@ impl<Output, Item, Func> DynFolder<Output, Item, Func> {
         // We need to mem::forget it to avoid running destructors on
         // the uninitialized value:
         mem::forget(uninit);
+    }
+}
+
+impl<Output, Item, Func> std::fmt::Debug for DynFolder<Output, Item, Func>
+where
+    Output: std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "DynFolder::<{}, {}, _> {{ output: {:?}, function: {} }}",
+            &std::any::type_name::<Output>(),
+            &std::any::type_name::<Item>(),
+            self.output,
+            &std::any::type_name::<Func>(),
+        )
     }
 }
 

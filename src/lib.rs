@@ -40,12 +40,26 @@
 //! iterator.fold(initial, function);
 //! ```
 //!
-//! That works well when all the data we need is provided by a single
-//! iterator. If we have a more complex logic, `fold` can't be used.
+//! That works well when all the data we need is provided by a single iterator. If we have a
+//! more complex logic, `fold` can't be used.
 //!
-//! *autofolder* flips this structure by being built with the initial
-//! value and the folding function, and accepting values from various
-//! types of different sources during its lifetime.
+//! *autofolder* flips this structure by being built with the initial value and the folding
+//! function, and accepting values from various types of different sources during its lifetime.
+//!
+//! ```rust
+//! # use autofolder::*;
+//! # type Autofolder<F> = DynFolder::<i32, i32, F>;
+//! # let initial = 0_i32;
+//! # let function = |a: i32, b:i32| a + b;
+//! # let iterator = vec![0_i32].into_iter();
+//! # let value = 0_i32;
+//! let mut autofolder = Autofolder::new(initial, function);
+//! // Fold in a whole iterator, can be repeated:
+//! autofolder.extend(iterator);
+//! // Fold in an individual value:
+//! autofolder.fold(value);
+//! ```
+//!
 
 mod dynfolder;
 pub use self::dynfolder::*;

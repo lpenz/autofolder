@@ -9,12 +9,19 @@ use anyhow::Result;
 /// Test builtin type
 #[test]
 fn test_builtin_sum_usize() -> Result<()> {
-    let mut sum = DynFolder::<usize, u16, _>::new(0_usize, |a: usize, i: u16| a + i as usize);
+    let mut sum = DynFolder::<usize, u16, _>::new(0_usize, usize_add_u16);
     sum.fold(10);
     assert_eq!(*sum.as_ref(), 10);
+    let sum2 = sum.clone();
     sum.extend((1..=5).rev());
     assert_eq!(sum.into_inner(), 25);
+    eprintln!("{:?}", sum2);
+    assert_eq!(sum2.into_inner(), 10);
     Ok(())
+}
+
+fn usize_add_u16(a: usize, i: u16) -> usize {
+    a + i as usize
 }
 
 /// Test newtype wrapper
@@ -48,9 +55,13 @@ fn test_newtype_without_default() -> Result<()> {
 fn test_newtype_vec() -> Result<()> {
     let mut autofolder = DynFolder::<Vec<String>, String, _>::new(vec![], folder);
     let f = |v| format!("{}", v);
+    autofolder.extend((1..=5).map(f));
+    assert_eq!(autofolder.as_ref().clone(), vec!["1", "2", "3", "4", "5"]);
     autofolder.extend((6..10).map(f).rev());
-    assert_eq!(autofolder.as_ref().clone(), vec!["9", "8", "7", "6"]);
-    assert_eq!(autofolder.into_inner(), vec!["9", "8", "7", "6"]);
+    assert_eq!(
+        autofolder.into_inner(),
+        vec!["1", "2", "3", "4", "5", "9", "8", "7", "6"]
+    );
     Ok(())
 }
 
