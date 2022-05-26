@@ -8,8 +8,17 @@
 use std::marker;
 use std::mem;
 
-/// The `DynFolder` type uses a struct field for the folding function, making use of dynamically
-/// dispatch.
+/// The `DynFolder` type uses a struct field for the folding function.
+///
+/// - Pros:
+///   - Folding function can use any type, builtin or otherwise.
+///   - Can't be used with `.collect()` because instances have to be explicitly built with a
+///     folding function.
+/// - Cons:
+///   - Slightly less efficient than [`ImplFolder`](crate::ImplFolder) due to the use of dynamic
+///     dispatch - we are effectively using a function pointer instead of a function call, after
+///     all.
+///   - Each instance can use a different folding function, provided as a constructor argument.
 ///
 /// Example:
 /// ```
@@ -28,8 +37,7 @@ use std::mem;
 /// sum.extend((1..=5));
 ///
 /// // And finally consume the autofolder to get the final output value:
-/// let total = sum.into_inner();
-/// println!("Total sum is {}", total);
+/// println!("Total sum is {}", sum.into_inner());
 /// ```
 #[derive(Copy, Clone)]
 pub struct DynFolder<Output, Item, Func> {
