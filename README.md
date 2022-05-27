@@ -54,7 +54,9 @@ autofolder.fold(value);
 
 ## Types of folders
 
-This crate provides two types of autofolders with different strategies:
+### By binding strategy
+
+This crate provides two types of autofolders with different function binding strategies:
 - [`DynFolder`]: the folding function is provided as a closure
   that is kept in a struct field. Characteristics:
   - Folding function can use any type, builtin or otherwise.
@@ -71,8 +73,25 @@ This crate provides two types of autofolders with different strategies:
   - Slighly more efficient than `DynFolder` due to monomorphization, which turns `.fold`
     calls into direct function calls.
 
+### By aggregation strategy
+
+*Reduce* in rust is a special kind of folding where the aggregator and the item types of
+the folding function are the same (`Fn(Item, Item) -> Item`). That allows us to set the
+internal autofolder state with the first yielded value, without calling the corresponding
+function.
+
+This crate provides the following "autoreducer" types:
+- [`ImplReduce`]: the reduce function is implemented via a trait.
+  - Similar to [`ImplFolder`].
+  - [`.into_inner()`](ImplReduce::into_inner) returns an [`Option`].
+  - Implements [`.collect()`](Iterator::collect) even when the type parameters don't
+    implement [`Default`].
+
 [`Iterator::fold`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.fold
 [`DynFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.DynFolder.html
 [`ImplFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.ImplFolder.html
+[`ImplReduce`]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html
 [`Default`]: https://doc.rust-lang.org/nightly/core/default/trait.Default.html
+[`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 [Iterator::collect]: https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#method.collect
+[ImplReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html#method.into_inner
