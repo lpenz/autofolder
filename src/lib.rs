@@ -89,6 +89,10 @@
 //! function.
 //!
 //! This crate provides the following "autoreducer" types:
+//! - [`DynReduce`]: the reduce function is implemented via a trait.
+//!   - Similar to [`DynFolder`].
+//!   - [`.into_inner()`](DynReduce::into_inner) returns an [`Option`].
+//!   - Constructor takes the `reduce` function.
 //! - [`ImplReduce`]: the reduce function is implemented via a trait.
 //!   - Similar to [`ImplFolder`].
 //!   - [`.into_inner()`](ImplReduce::into_inner) returns an [`Option`].
@@ -98,6 +102,9 @@
 
 mod dynfolder;
 pub use self::dynfolder::*;
+
+mod dynreduce;
+pub use self::dynreduce::*;
 
 mod implfolder;
 pub use self::implfolder::*;

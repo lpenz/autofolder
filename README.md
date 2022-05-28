@@ -81,6 +81,10 @@ internal autofolder state with the first yielded value, without calling the corr
 function.
 
 This crate provides the following "autoreducer" types:
+- [`DynReduce`]: the reduce function is implemented via a trait.
+  - Similar to [`DynFolder`].
+  - [`.into_inner()`](DynReduce::into_inner) returns an [`Option`].
+  - Constructor takes the `reduce` function.
 - [`ImplReduce`]: the reduce function is implemented via a trait.
   - Similar to [`ImplFolder`].
   - [`.into_inner()`](ImplReduce::into_inner) returns an [`Option`].
@@ -89,9 +93,11 @@ This crate provides the following "autoreducer" types:
 
 [`Iterator::fold`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.fold
 [`DynFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.DynFolder.html
+[`DynReduce`]: https://docs.rs/autofolder/latest/autofolder/struct.DynReduce.html
 [`ImplFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.ImplFolder.html
 [`ImplReduce`]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html
 [`Default`]: https://doc.rust-lang.org/nightly/core/default/trait.Default.html
 [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
 [Iterator::collect]: https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#method.collect
+[DynReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.DynReduce.html#method.into_inner
 [ImplReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html#method.into_inner
