@@ -99,6 +99,12 @@
 //!   - Implements [`.collect()`](Iterator::collect) even when the type parameters don't
 //!     implement [`Default`].
 //!
+//! ## Specific autofolders
+//!
+//! This create also provides some built-in autofolders for specific functions:
+//! - [`Max`]: container that keeps only the max value iterated, as given by [`std::cmp::PartialOrd`].
+//! - [`Min`]: analogous to `Max`, but for the minimal value.
+//!
 
 mod dynfolder;
 pub use self::dynfolder::*;
@@ -111,3 +117,6 @@ pub use self::implfolder::*;
 
 mod implreduce;
 pub use self::implreduce::*;
+
+mod minmax;
+pub use self::minmax::*;
