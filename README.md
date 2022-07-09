@@ -91,6 +91,12 @@ This crate provides the following "autoreducer" types:
   - Implements [`.collect()`](Iterator::collect) even when the type parameters don't
     implement [`Default`].
 
+### Specific autofolders
+
+This create also provides some built-in autofolders for specific functions:
+- [`Max`]: container that keeps only the max value iterated, as given by [`std::cmp::PartialOrd`].
+- [`Min`]: analogous to `Max`, but for the minimal value.
+
 [`Iterator::fold`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.fold
 [`DynFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.DynFolder.html
 [`DynReduce`]: https://docs.rs/autofolder/latest/autofolder/struct.DynReduce.html
@@ -101,3 +107,6 @@ This crate provides the following "autoreducer" types:
 [Iterator::collect]: https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#method.collect
 [DynReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.DynReduce.html#method.into_inner
 [ImplReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html#method.into_inner
+[`Max`]: https://docs.rs/autofolder/latest/autofolder/struct.Max.html
+[`Min`]: https://docs.rs/autofolder/latest/autofolder/struct.Min.html
+[`std::cmp::PartialOrd`]: https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html
