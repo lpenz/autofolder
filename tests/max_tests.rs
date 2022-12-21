@@ -7,6 +7,23 @@ use autofolder::*;
 use anyhow::Result;
 use std::cmp::Ordering;
 
+/// Test extend, collect
+#[test]
+fn test_max() -> Result<()> {
+    let mut max = Max::<usize>::from(0);
+    max.eval_ref(&3);
+    assert_eq!(max.as_ref(), Some(&3));
+    max.extend(1..=5);
+    assert_eq!(max.as_ref(), Some(&5));
+    let max2 = max.clone();
+    max.extend((6..=10).rev());
+    assert_eq!(max.into_inner(), Some(10));
+    assert_eq!(max2.into_inner(), Some(5));
+    let max = (7..=9).rev().into_iter().collect::<Max<_>>();
+    assert_eq!(max.into_inner(), Some(9));
+    Ok(())
+}
+
 /// Test newtype wrapper
 #[test]
 fn test_newtype_with_default() -> Result<()> {

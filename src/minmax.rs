@@ -88,7 +88,7 @@ macro_rules! impl_minmax {
             pub fn as_ref(&self) -> Option<&Item> {
                 self.item.as_ref()
             }
-            /// Replaces the current value with the new one if the new one is greater.
+            /// Replaces the current value with the new one if the new one is greater/smaller.
             pub fn reduce(&mut self, item: Item)
             where
                 Item: PartialOrd,
@@ -103,12 +103,36 @@ macro_rules! impl_minmax {
                     self.item = Some(item);
                 }
             }
+            /// Replaces the current value with the one behing the ref if it is greater/smaller.
+            ///
+            /// This function requires the `Clone` trait, but uses it only if necessary.
+            pub fn reduce_ref(&mut self, item: &Item)
+            where
+                Item: PartialOrd + Clone,
+            {
+                if self.item.is_none()
+                    || self
+                        .item
+                        .as_ref()
+                        .map(|i| item.partial_cmp(i) == Some($cmpval))
+                        == Some(true)
+                {
+                    self.item = Some(item.clone());
+                }
+            }
             /// Alias for [`$name::reduce`]
             pub fn eval(&mut self, item: Item)
             where
                 Item: PartialOrd,
             {
                 self.reduce(item)
+            }
+            /// Alias for [`$name::reduce_ref`]
+            pub fn eval_ref(&mut self, item: &Item)
+            where
+                Item: PartialOrd + Clone,
+            {
+                self.reduce_ref(item)
             }
         }
 
@@ -247,7 +271,7 @@ impl<Item> MinMax<Item> {
     pub fn max_as_ref(&self) -> Option<&Item> {
         self.max.as_ref()
     }
-    /// Replaces a current value with the new one if the new one is greater/less.
+    /// Replaces a current value with the new one if the new one is greater/smaller.
     ///
     /// When we have a single value, `min` is always filled up first,
     /// and then swapped with `max` if necessary.
@@ -286,12 +310,60 @@ impl<Item> MinMax<Item> {
             self.min = Some(item);
         };
     }
+    /// Replaces a current value with the one behind the ref if it is greater/smaller.
+    ///
+    /// When we have a single value, `min` is always filled up first,
+    /// and then swapped with `max` if necessary.
+    ///
+    /// This function requires the `Clone` trait, but uses it only if necessary.
+    pub fn reduce_ref(&mut self, item: &Item)
+    where
+        Item: PartialOrd + Clone,
+    {
+        let oldmin_opt = std::mem::take(&mut self.min);
+        if let Some(oldmin) = oldmin_opt {
+            let cmpmin = item.partial_cmp(&oldmin);
+            if cmpmin == Some(std::cmp::Ordering::Less) {
+                if self.max.is_none() {
+                    // We only had min, so we have to put it in max:
+                    self.max = Some(oldmin);
+                }
+                self.min = Some(item.clone());
+            } else {
+                self.min = Some(oldmin);
+                // As we have not moved item into min, we can check it against max:
+                let oldmax_opt = std::mem::take(&mut self.max);
+                if let Some(oldmax) = oldmax_opt {
+                    if item.partial_cmp(&oldmax) == Some(std::cmp::Ordering::Greater) {
+                        self.max = Some(item.clone());
+                    } else {
+                        self.max = Some(oldmax);
+                    }
+                } else if cmpmin == Some(std::cmp::Ordering::Greater) {
+                    // We have a min, and item is greater than it, but we didn't have a max:
+                    self.max = Some(item.clone());
+                } else {
+                    // If it's equal to min, we don't do anything.
+                };
+            }
+        } else {
+            // First item always goes to self.min:
+            self.min = Some(item.clone());
+        };
+    }
     /// Alias for [`MinMax::reduce`]
     pub fn eval(&mut self, item: Item)
     where
         Item: PartialOrd,
     {
         self.reduce(item)
+    }
+    /// Alias for [`MinMax::reduce_ref`]
+    pub fn eval_ref(&mut self, item: &Item)
+    where
+        Item: PartialOrd + Clone,
+    {
+        self.reduce_ref(item)
     }
 }
 

@@ -11,6 +11,8 @@ use std::cmp::Ordering;
 #[test]
 fn test_minmax() -> Result<()> {
     let mut minmax = MinMax::<usize>::from(0);
+    minmax.eval_ref(&3);
+    assert_eq!(minmax.as_refs(), Some((&0, &3)));
     minmax.extend(1..=5);
     assert_eq!(minmax.as_ref(), (Some(&0), Some(&5)));
     let minmax2 = minmax.clone();
