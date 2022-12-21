@@ -12,5 +12,5 @@ categories = ["rust-patterns"]
 keywords = ["fold", "reduce", "container", "ad-hoc"]
 
 [dev-dependencies]
-anyhow = "1.0.42"
+anyhow = "1.0.68"
 derive_more = "0.99.17"
