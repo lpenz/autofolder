@@ -29,6 +29,8 @@
 //! println!("Max value is {}", max.into_inner());
 //! ```
 //!
+//! See also [`Min`], [`Max`] and [`MinMax`] for useful specific reducers.
+//!
 //! # Rationale
 //!
 //! *Folding* in Rust is accomplished via the [`Iterator::fold`] method, like so:
@@ -102,8 +104,8 @@
 //! ## Specific autofolders
 //!
 //! This create also provides some built-in autofolders for specific functions:
-//! - [`Max`]: container that keeps only the max value iterated, as given by [`std::cmp::PartialOrd`].
-//! - [`Min`]: analogous to `Max`, but for the minimal value.
+//! - [`Min`]: container that keeps only the minimal value iterated, as given by [`std::cmp::PartialOrd`].
+//! - [`Max`]: analogous to `Max`, but for the max value.
 //! - [`MinMax`]: container that keeps a tuple with both the min and max values.
 //!
 

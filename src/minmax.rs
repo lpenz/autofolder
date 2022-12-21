@@ -18,7 +18,10 @@
 /// // We can "reduce-in" individual items.
 /// // (note: as this is the first value, we incorporate it
 /// //  without calling the trait function)
-/// max.reduce(3);
+/// max.reduce(2);
+///
+/// // `eval` does the same as `reduce`:
+/// max.eval(3);
 ///
 /// // We can then peek at the running output:
 /// println!("Partial max is {:?}", max.as_ref());
@@ -35,7 +38,34 @@ pub struct Max<Item> {
     item: Option<Item>,
 }
 
-/// Analogous to [`Max`] but for the minimal value.
+/// The `Min` type uses the [`std::cmp::PartialOrd`] trait to contain only the smallest iterated
+/// value.
+///
+/// Example:
+/// ```
+/// use autofolder::*;
+///
+/// // Create an autofolder that collects the min usize.
+/// let mut min = Min::<usize>::default();
+///
+/// // We can "reduce-in" individual items.
+/// // (note: as this is the first value, we incorporate it
+/// //  without calling the trait function)
+/// min.reduce(3);
+///
+/// // `eval` does the same as `reduce`:
+/// min.eval(2);
+///
+/// // We can then peek at the running output:
+/// println!("Partial min is {:?}", min.as_ref());
+///
+/// // And still keep on folding by processing whole iterators:
+/// min.extend((1..=5));
+///
+/// // And finally consume the autofolder to get the final output value:
+/// let min = min.into_inner().unwrap();
+/// println!("Final min is {}", min);
+/// ```
 #[derive(Debug, Copy, Clone)]
 pub struct Min<Item> {
     item: Option<Item>,
@@ -119,7 +149,39 @@ macro_rules! impl_minmax {
 impl_minmax!(Max, std::cmp::Ordering::Greater);
 impl_minmax!(Min, std::cmp::Ordering::Less);
 
-/// Container that keeps a tuple with both the min and max values.
+/// The `MinMax` type uses the [`std::cmp::PartialOrd`] trait to
+/// contain both the smallest and largest iterated values.
+///
+/// Example:
+/// ```
+/// use autofolder::*;
+///
+/// // Create an autofolder that collects the min+max usize.
+/// let mut minmax = MinMax::<usize>::default();
+///
+/// // We can "reduce-in" individual items.
+/// // (note: as this is the first value, we incorporate it
+/// //  without calling the trait function)
+/// minmax.reduce(3);
+///
+/// // Minmax fills up `min` first, so at this moment we can see that
+/// // min is all we have:
+/// println!("Partial minmax is {:?}", minmax.as_ref());
+///
+/// // `eval` does the same as `reduce`, and in this case sets
+/// // min=2 and max=3:
+/// minmax.eval(2);
+///
+/// // We can now peek at the running output as a single `Option`:
+/// println!("Partial minmax is {:?}", minmax.as_refs());
+///
+/// // And still keep on folding by processing whole iterators:
+/// minmax.extend((1..=5));
+///
+/// // And finally consume the autofolder to get the final output value:
+/// let (min, max) = minmax.into_inner_unwrap();
+/// println!("Final min is {}, max is {}", min, max);
+/// ```
 #[derive(Debug, Copy, Clone)]
 pub struct MinMax<Item> {
     min: Option<Item>,

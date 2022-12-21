@@ -30,6 +30,8 @@ max.extend((1..=5));
 println!("Max value is {}", max.into_inner());
 ```
 
+See also [`Min`], [`Max`] and [`MinMax`] for useful specific reducers.
+
 ## Rationale
 
 *Folding* in Rust is accomplished via the [`Iterator::fold`] method, like so:
@@ -94,8 +96,9 @@ This crate provides the following "autoreducer" types:
 ### Specific autofolders
 
 This create also provides some built-in autofolders for specific functions:
-- [`Max`]: container that keeps only the max value iterated, as given by [`std::cmp::PartialOrd`].
-- [`Min`]: analogous to `Max`, but for the minimal value.
+- [`Min`]: container that keeps only the minimal value iterated, as given by [`std::cmp::PartialOrd`].
+- [`Max`]: analogous to `Max`, but for the max value.
+- [`MinMax`]: container that keeps a tuple with both the min and max values.
 
 [`Iterator::fold`]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.fold
 [`DynFolder`]: https://docs.rs/autofolder/latest/autofolder/struct.DynFolder.html
@@ -107,6 +110,7 @@ This create also provides some built-in autofolders for specific functions:
 [Iterator::collect]: https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html#method.collect
 [DynReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.DynReduce.html#method.into_inner
 [ImplReduce::into_inner]: https://docs.rs/autofolder/latest/autofolder/struct.ImplReduce.html#method.into_inner
-[`Max`]: https://docs.rs/autofolder/latest/autofolder/struct.Max.html
 [`Min`]: https://docs.rs/autofolder/latest/autofolder/struct.Min.html
+[`Max`]: https://docs.rs/autofolder/latest/autofolder/struct.Max.html
+[`MinMax`]: https://docs.rs/autofolder/latest/autofolder/struct.MinMax.html
 [`std::cmp::PartialOrd`]: https://doc.rust-lang.org/std/cmp/trait.PartialOrd.html
