@@ -104,6 +104,7 @@
 //! This create also provides some built-in autofolders for specific functions:
 //! - [`Max`]: container that keeps only the max value iterated, as given by [`std::cmp::PartialOrd`].
 //! - [`Min`]: analogous to `Max`, but for the minimal value.
+//! - [`MinMax`]: container that keeps a tuple with both the min and max values.
 //!
 
 mod dynfolder;
