@@ -34,7 +34,7 @@ fn test_newtype_with_default() -> Result<()> {
     eprintln!("{:?}", minmax);
     assert_eq!(minmax.as_ref(), (Some(&Usize(0)), Some(&Usize(5))));
     let sum2 = minmax.clone();
-    minmax.extend((6..=10).map(Usize).rev());
+    minmax.extend((6..=10).map(Usize).rev().collect::<Vec<_>>().iter());
     assert_eq!(minmax.into_inner(), (Some(Usize(0)), Some(Usize(10))));
     assert_eq!(sum2.into_inners(), Some((Usize(0), Usize(5))));
     Ok(())
@@ -72,7 +72,7 @@ fn test_newtype_vec() -> Result<()> {
 /// Test empty vector
 #[test]
 fn test_empty() -> Result<()> {
-    let minmax = vec![].into_iter().collect::<MinMax<usize>>();
+    let minmax = vec![].iter().collect::<MinMax<usize>>();
     assert_eq!(minmax.min_as_ref(), None);
     assert_eq!(minmax.max_as_ref(), None);
     assert_eq!(minmax.clone().into_inner(), (None, None));

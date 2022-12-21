@@ -151,6 +151,15 @@ macro_rules! impl_minmax {
             }
         }
 
+        impl<'a, Item> Extend<&'a Item> for $name<Item>
+        where
+            Item: PartialOrd + Clone,
+        {
+            fn extend<It: IntoIterator<Item = &'a Item>>(&mut self, iter: It) {
+                iter.into_iter().for_each(|i| self.reduce_ref(i));
+            }
+        }
+
         impl<Item> Default for $name<Item> {
             fn default() -> Self {
                 Self { item: None }
@@ -162,6 +171,17 @@ macro_rules! impl_minmax {
             Item: PartialOrd,
         {
             fn from_iter<It: IntoIterator<Item = Item>>(iter: It) -> Self {
+                let mut autofolder = Self::default();
+                autofolder.extend(iter);
+                autofolder
+            }
+        }
+
+        impl<'a, Item> std::iter::FromIterator<&'a Item> for $name<Item>
+        where
+            Item: PartialOrd + Clone,
+        {
+            fn from_iter<It: IntoIterator<Item = &'a Item>>(iter: It) -> Self {
                 let mut autofolder = Self::default();
                 autofolder.extend(iter);
                 autofolder
@@ -382,6 +402,15 @@ where
     }
 }
 
+impl<'a, Item> Extend<&'a Item> for MinMax<Item>
+where
+    Item: PartialOrd + Clone,
+{
+    fn extend<It: IntoIterator<Item = &'a Item>>(&mut self, iter: It) {
+        iter.into_iter().for_each(|i| self.reduce_ref(i));
+    }
+}
+
 impl<Item> Default for MinMax<Item> {
     fn default() -> Self {
         Self {
@@ -396,6 +425,17 @@ where
     Item: PartialOrd,
 {
     fn from_iter<It: IntoIterator<Item = Item>>(iter: It) -> Self {
+        let mut autofolder = Self::default();
+        autofolder.extend(iter);
+        autofolder
+    }
+}
+
+impl<'a, Item> std::iter::FromIterator<&'a Item> for MinMax<Item>
+where
+    Item: PartialOrd + Clone,
+{
+    fn from_iter<It: IntoIterator<Item = &'a Item>>(iter: It) -> Self {
         let mut autofolder = Self::default();
         autofolder.extend(iter);
         autofolder
