@@ -123,3 +123,9 @@ pub use self::implreduce::*;
 
 mod minmax;
 pub use self::minmax::*;
+
+#[cfg(feature = "num")]
+mod minmaxnum;
+
+#[cfg(feature = "num")]
+pub use self::minmaxnum::*;

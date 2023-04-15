@@ -11,6 +11,12 @@ repository = "https://github.com/lpenz/autofolder"
 categories = ["rust-patterns"]
 keywords = ["fold", "reduce", "container", "ad-hoc"]
 
+[dependencies]
+num = { version = "0.4.0", optional = true }
+
+[features]
+num = ["dep:num"]
+
 [dev-dependencies]
 anyhow = "1.0.68"
 derive_more = "0.99.17"
