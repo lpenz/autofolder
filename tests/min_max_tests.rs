@@ -5,9 +5,28 @@
 use autofolder::*;
 
 use anyhow::Result;
-use std::cmp::Ordering;
 
-/// Test extend, collect
+mod strnum;
+use strnum::*;
+
+/// Test extend, collect for min
+#[test]
+fn test_min() -> Result<()> {
+    let mut min = Min::<usize>::from(500);
+    min.eval_ref(&300);
+    assert_eq!(min.as_ref(), Some(&300));
+    min.extend(250..=255);
+    assert_eq!(min.as_ref(), Some(&250));
+    let min2 = min.clone();
+    min.extend((6..=10).rev());
+    assert_eq!(min.into_inner(), Some(6));
+    assert_eq!(min2.into_inner(), Some(250));
+    let min = (2..=4).rev().into_iter().collect::<Min<_>>();
+    assert_eq!(min.into_inner(), Some(2));
+    Ok(())
+}
+
+/// Test extend, collect for max
 #[test]
 fn test_max() -> Result<()> {
     let mut max = Max::<usize>::from(0);
@@ -24,56 +43,34 @@ fn test_max() -> Result<()> {
     Ok(())
 }
 
-/// Test newtype wrapper
+/// Test wtype with clone
 #[test]
-fn test_newtype_with_default() -> Result<()> {
-    #[derive(Default, PartialEq, Eq, PartialOrd, Debug, Clone)]
-    pub struct Usize(usize);
-    let mut max = Max::<Usize>::from(Usize::default());
-    max.extend((1..=5).map(Usize));
-    eprintln!("{:?}", max);
-    assert_eq!(max.as_ref(), Some(&Usize(5)));
+fn test_type_with_clone() -> Result<()> {
+    let mut max = Max::<StrnumClone>::default();
+    max.extend((1..=5).map(StrnumClone::from));
+    assert_eq!(max.as_ref(), Some(&StrnumClone::from(5)));
     let sum2 = max.clone();
-    max.extend((6..=10).map(Usize).rev());
-    assert_eq!(max.into_inner(), Some(Usize(10)));
-    assert_eq!(sum2.into_inner(), Some(Usize(5)));
+    max.extend((6..=10).map(StrnumClone::from).rev());
+    assert_eq!(max.into_inner(), Some(StrnumClone::from(10)));
+    assert_eq!(sum2.into_inner(), Some(StrnumClone::from(5)));
     Ok(())
 }
 
-/// Test newtype wrapper without default
+/// Test type without clone
 #[test]
-fn test_newtype_without_default() -> Result<()> {
-    #[derive(Default, PartialEq, Eq, PartialOrd, Debug)]
-    pub struct Usize(usize);
-    let max = (1..=5).map(Usize).rev().collect::<Max<Usize>>();
-    assert_eq!(max.into_inner().unwrap().0, 5);
-    Ok(())
-}
-
-/// Test vector of Strings, neither impl Copy
-#[test]
-fn test_newtype_vec() -> Result<()> {
-    #[derive(PartialEq, Eq, Debug)]
-    pub struct MyString(String);
-    impl PartialOrd for MyString {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            self.0.len().partial_cmp(&other.0.len())
-        }
-    }
-    let mut autofolder = Max::<MyString>::default();
-    autofolder.extend((6..=30).map(|i| MyString(format!("{}", i))).rev());
-    assert_eq!(autofolder.as_ref().clone().unwrap().0, "30");
-    autofolder.extend((950..=1005).map(|i| MyString(format!("{}", i))));
-    assert_eq!(autofolder.into_inner().unwrap().0, "1000");
+fn test_type_without_clone() -> Result<()> {
+    let mut autofolder = Max::<Strnum>::default();
+    autofolder.extend((6..=30).map(Strnum::from).rev());
+    assert_eq!(autofolder.as_ref().clone().unwrap(), &Strnum::from(30));
+    autofolder.extend((950..=1005).map(Strnum::from));
+    assert_eq!(autofolder.into_inner().unwrap(), Strnum::from("1005"));
     Ok(())
 }
 
 /// Test empty vector
 #[test]
 fn test_empty() -> Result<()> {
-    #[derive(Default, PartialEq, Eq, PartialOrd, Debug)]
-    pub struct Usize(usize);
-    let sum = vec![].into_iter().collect::<Max<Usize>>();
+    let sum = vec![].into_iter().collect::<Max<Strnum>>();
     assert_eq!(sum.into_inner(), None);
     Ok(())
 }

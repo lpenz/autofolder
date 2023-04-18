@@ -5,7 +5,9 @@
 use autofolder::*;
 
 use anyhow::Result;
-use std::cmp::Ordering;
+
+mod strnum;
+use strnum::*;
 
 /// Test extend, collect
 #[test]
@@ -24,48 +26,47 @@ fn test_minmax() -> Result<()> {
     Ok(())
 }
 
-/// Test newtype wrapper
+/// Test type with clone
 #[test]
-fn test_newtype_with_default() -> Result<()> {
-    #[derive(Default, PartialEq, Eq, PartialOrd, Debug, Clone)]
-    pub struct Usize(usize);
-    let mut minmax = MinMax::<Usize>::from(Usize::default());
-    minmax.extend((1..=5).map(Usize));
+fn test_type_with_clone() -> Result<()> {
+    let mut minmax = MinMax::<StrnumClone>::from(StrnumClone::from(0));
+    minmax.extend((1..=5).map(StrnumClone::from));
     eprintln!("{:?}", minmax);
-    assert_eq!(minmax.as_ref(), (Some(&Usize(0)), Some(&Usize(5))));
+    assert_eq!(
+        minmax.as_ref(),
+        (Some(&StrnumClone::from(0)), Some(&StrnumClone::from(5)))
+    );
     let sum2 = minmax.clone();
-    minmax.extend((6..=10).map(Usize).rev().collect::<Vec<_>>().iter());
-    assert_eq!(minmax.into_inner(), (Some(Usize(0)), Some(Usize(10))));
-    assert_eq!(sum2.into_inners(), Some((Usize(0), Usize(5))));
+    minmax.extend(
+        (6..=10)
+            .map(StrnumClone::from)
+            .rev()
+            .collect::<Vec<_>>()
+            .iter(),
+    );
+    assert_eq!(
+        minmax.into_inner(),
+        (Some(StrnumClone::from(0)), Some(StrnumClone::from(10)))
+    );
+    assert_eq!(
+        sum2.into_inners(),
+        Some((StrnumClone::from(0), StrnumClone::from(5)))
+    );
     Ok(())
 }
 
-/// Test newtype wrapper without default
+/// Test type without clone
 #[test]
-fn test_newtype_without_default() -> Result<()> {
-    #[derive(Default, PartialEq, Eq, PartialOrd, Debug)]
-    pub struct Usize(usize);
-    let minmax = (1..=5).map(Usize).rev().collect::<MinMax<Usize>>();
-    assert_eq!(minmax.into_inner_unwrap(), (Usize(1), Usize(5)));
-    Ok(())
-}
-
-/// Test vector of Strings, neither impl Copy
-#[test]
-fn test_newtype_vec() -> Result<()> {
-    #[derive(PartialEq, Eq, Debug)]
-    pub struct MyString(String);
-    impl PartialOrd for MyString {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            self.0.len().partial_cmp(&other.0.len())
-        }
-    }
-    let mut autofolder = MinMax::<MyString>::default();
-    autofolder.extend((6..=30).map(|i| MyString(format!("{}", i))).rev());
-    assert_eq!(autofolder.min_as_ref().clone().unwrap().0, "9");
-    assert_eq!(autofolder.max_as_ref().clone().unwrap().0, "30");
-    autofolder.extend((950..=1005).map(|i| MyString(format!("{}", i))));
-    assert_eq!(autofolder.into_inner().1.unwrap().0, "1000");
+fn test_type_without_clone() -> Result<()> {
+    let mut autofolder = MinMax::<Strnum>::default();
+    autofolder.extend((6..=30).map(Strnum::from).rev());
+    assert_eq!(autofolder.min_as_ref().clone().unwrap(), &Strnum::from("6"));
+    assert_eq!(
+        autofolder.max_as_ref().clone().unwrap(),
+        &Strnum::from("30")
+    );
+    autofolder.extend((950..=1005).map(Strnum::from));
+    assert_eq!(autofolder.into_inner().1.unwrap(), Strnum::from("1005"));
     Ok(())
 }
 
