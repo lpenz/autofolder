@@ -15,14 +15,17 @@ fn test_min() -> Result<()> {
     let mut min = Min::<usize>::from(500);
     min.eval_ref(&300);
     assert_eq!(min.as_ref(), Some(&300));
-    min.extend(250..=255);
+    min.extend((250..=255).by_ref());
     assert_eq!(min.as_ref(), Some(&250));
-    let min2 = min.clone();
+    let clone = min.clone();
     min.extend((6..=10).rev());
     assert_eq!(min.into_inner(), Some(6));
-    assert_eq!(min2.into_inner(), Some(250));
-    let min = (2..=4).rev().into_iter().collect::<Min<_>>();
-    assert_eq!(min.into_inner(), Some(2));
+    assert_eq!(clone.into_inner(), Some(250));
+    let collect = (2..=4).rev().into_iter().collect::<Min<_>>();
+    assert_eq!(collect.into_inner(), Some(2));
+    let vec = (2..=4).rev().collect::<Vec<_>>();
+    let collect_ref = vec.iter().collect::<Min<usize>>();
+    assert_eq!(collect_ref.into_inner(), Some(2));
     Ok(())
 }
 
@@ -32,14 +35,17 @@ fn test_max() -> Result<()> {
     let mut max = Max::<usize>::from(0);
     max.eval_ref(&3);
     assert_eq!(max.as_ref(), Some(&3));
-    max.extend(1..=5);
+    max.extend((1..=5).by_ref());
     assert_eq!(max.as_ref(), Some(&5));
-    let max2 = max.clone();
+    let clone = max.clone();
     max.extend((6..=10).rev());
     assert_eq!(max.into_inner(), Some(10));
-    assert_eq!(max2.into_inner(), Some(5));
-    let max = (7..=9).rev().into_iter().collect::<Max<_>>();
-    assert_eq!(max.into_inner(), Some(9));
+    assert_eq!(clone.into_inner(), Some(5));
+    let collect = (7..=9).rev().into_iter().collect::<Max<_>>();
+    assert_eq!(collect.into_inner(), Some(9));
+    let vec = (2..=4).rev().collect::<Vec<_>>();
+    let collect_ref = vec.iter().collect::<Max<usize>>();
+    assert_eq!(collect_ref.into_inner(), Some(4));
     Ok(())
 }
 

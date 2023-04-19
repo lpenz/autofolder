@@ -17,12 +17,15 @@ fn test_minmax() -> Result<()> {
     assert_eq!(minmax.as_refs(), Some((&0, &3)));
     minmax.extend(1..=5);
     assert_eq!(minmax.as_ref(), (Some(&0), Some(&5)));
-    let minmax2 = minmax.clone();
+    let clone = minmax.clone();
     minmax.extend((6..=10).rev());
     assert_eq!(minmax.into_inner(), (Some(0), Some(10)));
-    assert_eq!(minmax2.into_inner(), (Some(0), Some(5)));
-    let minmax = (7..=9).rev().into_iter().collect::<MinMax<_>>();
-    assert_eq!(minmax.into_inner(), (Some(7), Some(9)));
+    assert_eq!(clone.into_inner(), (Some(0), Some(5)));
+    let collect = (7..=9).rev().into_iter().collect::<MinMax<_>>();
+    assert_eq!(collect.into_inner(), (Some(7), Some(9)));
+    let vec = (2..=4).rev().collect::<Vec<_>>();
+    let collect_ref = vec.iter().collect::<MinMax<usize>>();
+    assert_eq!(collect_ref.into_inner(), (Some(2), Some(4)));
     Ok(())
 }
 
