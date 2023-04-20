@@ -49,34 +49,27 @@ fn test_max() -> Result<()> {
     Ok(())
 }
 
-/// Test wtype with clone
+/// Test type without clone
+#[test]
+fn test_type_without_clone() -> Result<()> {
+    let mut max = Max::<Strnum>::default();
+    assert_eq!(max.as_ref(), None);
+    max.extend((1..=5).map(Strnum::from).rev());
+    assert_eq!(max.as_ref(), Some(&Strnum::from(5)));
+    max.extend((10..=15).map(Strnum::from));
+    assert_eq!(max.into_inner(), Some(Strnum::from("15")));
+    Ok(())
+}
+
+/// Test type with clone
 #[test]
 fn test_type_with_clone() -> Result<()> {
     let mut max = Max::<StrnumClone>::default();
     max.extend((1..=5).map(StrnumClone::from));
-    assert_eq!(max.as_ref(), Some(&StrnumClone::from(5)));
+    assert_eq!(max.clone().into_inner(), Some(StrnumClone::from(5)));
     let sum2 = max.clone();
-    max.extend((6..=10).map(StrnumClone::from).rev());
-    assert_eq!(max.into_inner(), Some(StrnumClone::from(10)));
+    max.extend((10..=15).map(StrnumClone::from).rev());
+    assert_eq!(max.into_inner(), Some(StrnumClone::from(15)));
     assert_eq!(sum2.into_inner(), Some(StrnumClone::from(5)));
-    Ok(())
-}
-
-/// Test type without clone
-#[test]
-fn test_type_without_clone() -> Result<()> {
-    let mut autofolder = Max::<Strnum>::default();
-    autofolder.extend((6..=30).map(Strnum::from).rev());
-    assert_eq!(autofolder.as_ref().clone().unwrap(), &Strnum::from(30));
-    autofolder.extend((950..=1005).map(Strnum::from));
-    assert_eq!(autofolder.into_inner().unwrap(), Strnum::from("1005"));
-    Ok(())
-}
-
-/// Test empty vector
-#[test]
-fn test_empty() -> Result<()> {
-    let sum = vec![].into_iter().collect::<Max<Strnum>>();
-    assert_eq!(sum.into_inner(), None);
     Ok(())
 }

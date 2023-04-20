@@ -217,79 +217,71 @@ impl_minmax!(Min, std::cmp::Ordering::Less);
 /// minmax.eval(2);
 ///
 /// // We can now peek at the running output as a single `Option`:
-/// println!("Partial minmax is {:?}", minmax.as_refs());
+/// println!("Partial minmax is {:?}", minmax.as_ref());
 ///
 /// // And still keep on folding by processing whole iterators:
 /// minmax.extend((1..=5));
 ///
 /// // And finally consume the autofolder to get the final output value:
-/// let (min, max) = minmax.into_inner_unwrap();
+/// let (min, max) = minmax.to_inner().unwrap();
 /// println!("Final min is {}, max is {}", min, max);
 /// ```
-#[derive(Debug, Copy, Clone)]
-pub struct MinMax<Item> {
-    min: Option<Item>,
-    max: Option<Item>,
+#[derive(Debug, Copy, Clone, Default)]
+pub enum MinMax<Item> {
+    /// Empty; no item evaluated.
+    #[default]
+    None,
+    /// Single item evaluated.
+    Single(Item),
+    /// Two or more items evaluated - min and max values.
+    Both(Item, Item),
 }
 
 impl<Item> MinMax<Item> {
     /// Creates a new `MinMax` with the provided initial values.
     pub fn new(initial: Item) -> Self {
-        Self {
-            min: Some(initial),
-            max: None,
-        }
+        Self::Single(initial)
     }
     /// Deconstruct self and return the inner values that were found.
     ///
     /// This function returns `max` as `None` if we are not holding
     /// two values.
-    pub fn into_inner(self) -> (Option<Item>, Option<Item>) {
-        (self.min, self.max)
-    }
-    /// Deconstruct self and return the inner values if they were both found.
-    ///
-    /// This function returns `None` globally if we are not holding
-    /// two values.
-    pub fn into_inners(self) -> Option<(Item, Item)> {
-        match (self.min, self.max) {
-            (None, _) => None,
-            (_, None) => None,
-            (Some(min), Some(max)) => Some((min, max)),
+    pub fn to_inner(self) -> Option<(Item, Item)>
+    where
+        Item: Clone,
+    {
+        match self {
+            Self::None => None,
+            Self::Single(item) => Some((item.clone(), item)),
+            Self::Both(min, max) => Some((min, max)),
         }
-    }
-    /// Deconstruct self and return the inner values unwrapped.
-    ///
-    /// Be aware that this function does an internal `unwrap`, which
-    /// panics when we are not holding two values.
-    pub fn into_inner_unwrap(self) -> (Item, Item) {
-        (self.min.unwrap(), self.max.unwrap())
     }
     /// Returns a reference to the inner values, if they exist.
     ///
     /// If we are not holding two values, this function returns `max`
     /// as `None`.
-    pub fn as_ref(&self) -> (Option<&Item>, Option<&Item>) {
-        (self.min.as_ref(), self.max.as_ref())
-    }
-    /// Returns a reference to both inner values, if they both exist.
-    ///
-    /// This function returns `None` globally if we are not holding
-    /// two values.
-    pub fn as_refs(&self) -> Option<(&Item, &Item)> {
-        match (&self.min, &self.max) {
-            (None, _) => None,
-            (_, None) => None,
-            (Some(min), Some(max)) => Some((min, max)),
+    pub fn as_ref(&self) -> Option<(&Item, &Item)> {
+        match self {
+            Self::None => None,
+            Self::Single(item) => Some((&item, &item)),
+            Self::Both(min, max) => Some((&min, &max)),
         }
     }
     /// Returns a reference to the min inner values, if it exist.
     pub fn min_as_ref(&self) -> Option<&Item> {
-        self.min.as_ref()
+        match self {
+            Self::None => None,
+            Self::Single(item) => Some(&item),
+            Self::Both(min, _) => Some(&min),
+        }
     }
     /// Returns a reference to the max inner values, if it exist.
     pub fn max_as_ref(&self) -> Option<&Item> {
-        self.max.as_ref()
+        match self {
+            Self::None => None,
+            Self::Single(item) => Some(&item),
+            Self::Both(_, max) => Some(&max),
+        }
     }
     /// Replaces a current value with the new one if the new one is greater/smaller.
     ///
@@ -299,35 +291,27 @@ impl<Item> MinMax<Item> {
     where
         Item: PartialOrd,
     {
-        let oldmin_opt = std::mem::take(&mut self.min);
-        if let Some(oldmin) = oldmin_opt {
-            let cmpmin = item.partial_cmp(&oldmin);
-            if cmpmin == Some(std::cmp::Ordering::Less) {
-                if self.max.is_none() {
-                    // We only had min, so we have to put it in max:
-                    self.max = Some(oldmin);
-                }
-                self.min = Some(item);
-            } else {
-                self.min = Some(oldmin);
-                // As we have not moved item into min, we can check it against max:
-                let oldmax_opt = std::mem::take(&mut self.max);
-                if let Some(oldmax) = oldmax_opt {
-                    if item.partial_cmp(&oldmax) == Some(std::cmp::Ordering::Greater) {
-                        self.max = Some(item);
-                    } else {
-                        self.max = Some(oldmax);
-                    }
-                } else if cmpmin == Some(std::cmp::Ordering::Greater) {
-                    // We have a min, and item is greater than it, but we didn't have a max:
-                    self.max = Some(item);
+        let old = std::mem::take(self);
+        *self = match old {
+            Self::None => Self::Single(item),
+            Self::Single(olditem) => {
+                if item.partial_cmp(&olditem) == Some(std::cmp::Ordering::Less) {
+                    Self::Both(item, olditem)
+                } else if item.partial_cmp(&olditem) == Some(std::cmp::Ordering::Greater) {
+                    Self::Both(olditem, item)
                 } else {
-                    // If it's equal to min, we don't do anything.
-                };
+                    Self::Single(olditem)
+                }
             }
-        } else {
-            // First item always goes to self.min:
-            self.min = Some(item);
+            Self::Both(oldmin, oldmax) => {
+                if item.partial_cmp(&oldmin) == Some(std::cmp::Ordering::Less) {
+                    Self::Both(item, oldmax)
+                } else if item.partial_cmp(&oldmax) == Some(std::cmp::Ordering::Greater) {
+                    Self::Both(oldmin, item)
+                } else {
+                    Self::Both(oldmin, oldmax)
+                }
+            }
         };
     }
     /// Replaces a current value with the one behind the ref if it is greater/smaller.
@@ -340,35 +324,27 @@ impl<Item> MinMax<Item> {
     where
         Item: PartialOrd + Clone,
     {
-        let oldmin_opt = std::mem::take(&mut self.min);
-        if let Some(oldmin) = oldmin_opt {
-            let cmpmin = item.partial_cmp(&oldmin);
-            if cmpmin == Some(std::cmp::Ordering::Less) {
-                if self.max.is_none() {
-                    // We only had min, so we have to put it in max:
-                    self.max = Some(oldmin);
-                }
-                self.min = Some(item.clone());
-            } else {
-                self.min = Some(oldmin);
-                // As we have not moved item into min, we can check it against max:
-                let oldmax_opt = std::mem::take(&mut self.max);
-                if let Some(oldmax) = oldmax_opt {
-                    if item.partial_cmp(&oldmax) == Some(std::cmp::Ordering::Greater) {
-                        self.max = Some(item.clone());
-                    } else {
-                        self.max = Some(oldmax);
-                    }
-                } else if cmpmin == Some(std::cmp::Ordering::Greater) {
-                    // We have a min, and item is greater than it, but we didn't have a max:
-                    self.max = Some(item.clone());
+        let old = std::mem::take(self);
+        *self = match old {
+            Self::None => Self::Single(item.clone()),
+            Self::Single(olditem) => {
+                if item.partial_cmp(&olditem) == Some(std::cmp::Ordering::Less) {
+                    Self::Both(item.clone(), olditem)
+                } else if item.partial_cmp(&olditem) == Some(std::cmp::Ordering::Greater) {
+                    Self::Both(olditem, item.clone())
                 } else {
-                    // If it's equal to min, we don't do anything.
-                };
+                    Self::Single(olditem)
+                }
             }
-        } else {
-            // First item always goes to self.min:
-            self.min = Some(item.clone());
+            Self::Both(oldmin, oldmax) => {
+                if item.partial_cmp(&oldmin) == Some(std::cmp::Ordering::Less) {
+                    Self::Both(item.clone(), oldmax)
+                } else if item.partial_cmp(&oldmax) == Some(std::cmp::Ordering::Greater) {
+                    Self::Both(oldmin, item.clone())
+                } else {
+                    Self::Both(oldmin, oldmax)
+                }
+            }
         };
     }
     /// Alias for [`MinMax::reduce`]
@@ -408,15 +384,6 @@ where
 {
     fn extend<It: IntoIterator<Item = &'a Item>>(&mut self, iter: It) {
         iter.into_iter().for_each(|i| self.reduce_ref(i));
-    }
-}
-
-impl<Item> Default for MinMax<Item> {
-    fn default() -> Self {
-        Self {
-            min: None,
-            max: None,
-        }
     }
 }
 

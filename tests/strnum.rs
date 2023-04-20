@@ -41,8 +41,8 @@ macro_rules! impl_strnum {
 
         impl PartialOrd for $name {
             fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-                let selfnum = usize::try_from(self).ok();
-                let othernum = usize::try_from(other).ok();
+                let selfnum = usize::try_from(self).ok()?;
+                let othernum = usize::try_from(other).ok()?;
                 Some(selfnum.cmp(&othernum))
             }
         }
