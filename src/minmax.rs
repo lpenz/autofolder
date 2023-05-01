@@ -136,6 +136,12 @@ macro_rules! impl_minmax {
             }
         }
 
+        impl<Item> Default for $name<Item> {
+            fn default() -> Self {
+                Self { item: None }
+            }
+        }
+
         impl<Item> From<Item> for $name<Item> {
             fn from(item: Item) -> Self {
                 Self::new(item)
@@ -157,12 +163,6 @@ macro_rules! impl_minmax {
         {
             fn extend<It: IntoIterator<Item = &'a Item>>(&mut self, iter: It) {
                 iter.into_iter().for_each(|i| self.reduce_ref(i));
-            }
-        }
-
-        impl<Item> Default for $name<Item> {
-            fn default() -> Self {
-                Self { item: None }
             }
         }
 
@@ -243,9 +243,6 @@ impl<Item> MinMax<Item> {
         Self::Single(initial)
     }
     /// Deconstruct self and return the inner values that were found.
-    ///
-    /// This function returns `max` as `None` if we are not holding
-    /// two values.
     pub fn to_inner(self) -> Option<(Item, Item)>
     where
         Item: Clone,
@@ -257,9 +254,6 @@ impl<Item> MinMax<Item> {
         }
     }
     /// Returns a reference to the inner values, if they exist.
-    ///
-    /// If we are not holding two values, this function returns `max`
-    /// as `None`.
     pub fn as_ref(&self) -> Option<(&Item, &Item)> {
         match self {
             Self::None => None,
