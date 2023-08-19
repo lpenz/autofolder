@@ -56,7 +56,7 @@ fn test_newtype_vec() -> Result<()> {
     let mut autofolder = StringJoiner::from(VecString(vec![]));
     autofolder.extend((6..10).map(|i| format!("{}", i)).rev());
     eprintln!("{:?}", autofolder);
-    assert_eq!(autofolder.as_ref().clone().0, vec!["9", "8", "7", "6"]);
+    assert_eq!(autofolder.as_ref().0, vec!["9", "8", "7", "6"]);
     assert_eq!(autofolder.into_inner().0, vec!["9", "8", "7", "6"]);
     Ok(())
 }
